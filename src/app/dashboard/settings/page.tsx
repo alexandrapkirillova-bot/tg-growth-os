@@ -87,10 +87,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="px-8 py-8">
+    <div className="px-4 py-6 md:px-8 md:py-8">
       <h1 className="mb-8 text-2xl font-bold text-white">Настройки</h1>
 
-      <div className="flex flex-col gap-6 max-w-2xl">
+      <div className="flex w-full flex-col gap-6 md:max-w-2xl">
         {/* Профиль */}
         <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="mb-6 text-lg font-semibold text-white">Профиль</h2>

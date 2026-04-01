@@ -136,19 +136,19 @@ export default function DashboardPage() {
   }));
 
   return (
-    <div className="px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="px-4 py-6 md:px-8 md:py-8">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-white">Дашборд</h1>
         <Link
           href="/dashboard/add-channel"
-          className="rounded-lg bg-[#e8c547] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          className="self-start rounded-lg bg-[#e8c547] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 sm:self-auto"
         >
           + Подключить канал
         </Link>
       </div>
 
       {/* Метрики */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <MetricCard label="Подписчики" value={metrics.subscribers.toLocaleString("ru-RU")} />
         <MetricCard label="Постов за 7 дней" value={metrics.postsLast7Days.toLocaleString("ru-RU")} />
         <MetricCard label="Средние просмотры" value={metrics.avgViews.toLocaleString("ru-RU")} />
@@ -193,6 +193,7 @@ export default function DashboardPage() {
             Посты появятся после первого обновления
           </p>
         ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-zinc-800 text-left text-zinc-500">
@@ -217,6 +218,7 @@ export default function DashboardPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

@@ -142,8 +142,8 @@ export default function AnalyticsPage() {
     .slice(0, 10);
 
   return (
-    <div className="px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="px-4 py-6 md:px-8 md:py-8">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-white">Аналитика</h1>
 
         {channels.length > 0 && (
@@ -242,6 +242,7 @@ export default function AnalyticsPage() {
                 Посты появятся после первого обновления
               </p>
             ) : (
+              <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-zinc-800 text-left text-zinc-500">
@@ -266,6 +267,7 @@ export default function AnalyticsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>
