@@ -12,6 +12,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
+import PlanBadge from "@/components/PlanBadge";
 
 interface Channel {
   id: string;
@@ -37,13 +38,6 @@ interface Metrics {
   postsLast7Days: number;
   avgViews: number;
 }
-
-const PLAN_BADGE: Record<Plan, { label: string; className: string }> = {
-  founder: { label: "Founder ⭐", className: "bg-[#e8c547]/20 text-[#e8c547] border border-[#e8c547]/40" },
-  free: { label: "Free", className: "bg-zinc-800 text-zinc-400 border border-zinc-700" },
-  standard: { label: "Стандарт", className: "bg-blue-500/20 text-blue-400 border border-blue-500/40" },
-  pro: { label: "Про", className: "bg-green-500/20 text-green-400 border border-green-500/40" },
-};
 
 export default function DashboardPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
@@ -153,12 +147,15 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Дашборд</h1>
           {userEmail && (
-            <div className="mt-1.5 flex items-center gap-2">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2">
               <span className="text-sm text-zinc-500">{userEmail}</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PLAN_BADGE[plan].className}`}>
-                {PLAN_BADGE[plan].label}
-              </span>
+              <PlanBadge plan={plan} />
             </div>
+          )}
+          {plan === "founder" && (
+            <p className="mt-2 text-sm font-medium text-[#e8c547]">
+              Вы один из первых 20 основателей TG Growth OS 🎉
+            </p>
           )}
         </div>
         <Link

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
+import PlanBadge from "@/components/PlanBadge";
 
 const NAV_ITEMS = [
   {
@@ -60,7 +61,6 @@ const NAV_ITEMS = [
 
 const SETTINGS_ITEM = {
   label: "Настройки",
-  mobileLabel: "Настройки",
   href: "/dashboard/settings",
   icon: (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0" aria-hidden="true">
@@ -70,24 +70,34 @@ const SETTINGS_ITEM = {
   ),
 };
 
+const PROFILE_ICON = (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0" aria-hidden="true">
+    <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M3 17c0-3.87 3.13-7 7-7s7 3.13 7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
 const SIGN_OUT_ICON = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, SETTINGS_ITEM];
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [userPlan, setUserPlan] = useState<Plan>("free");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) {
         router.push("/login");
       } else {
+        setUserEmail(session.user.email ?? "");
+        const plan = await getUserPlan();
+        setUserPlan(plan);
         setReady(true);
       }
     });
@@ -141,6 +151,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="border-t border-zinc-800 px-1.5 py-4 lg:px-3">
+          {/* User info — desktop only */}
+          {userEmail && (
+            <div className="mb-3 hidden rounded-lg bg-zinc-800/50 px-3 py-2.5 lg:block">
+              <p className="mb-1.5 truncate text-xs text-zinc-500" title={userEmail}>
+                {userEmail}
+              </p>
+              <PlanBadge plan={userPlan} />
+            </div>
+          )}
+
           <Link
             href="/dashboard/settings"
             title="Настройки"
@@ -172,7 +192,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Bottom navigation — mobile only */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-[#222] bg-[#111111] md:hidden">
-        {BOTTOM_NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
@@ -187,6 +207,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           );
         })}
+        {/* Profile item with plan badge */}
+        <Link
+          href="/dashboard/settings"
+          className={`flex flex-1 flex-col items-center gap-1 py-2 leading-tight transition-colors ${
+            pathname === "/dashboard/settings" ? "text-[#e8c547]" : "text-[#666]"
+          }`}
+        >
+          {PROFILE_ICON}
+          <PlanBadge plan={userPlan} />
+        </Link>
       </nav>
     </div>
   );

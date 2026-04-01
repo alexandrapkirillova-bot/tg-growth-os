@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
 import UpgradeModal from "@/components/UpgradeModal";
+import PlanBadge from "@/components/PlanBadge";
 
 const PLANS = [
   {
@@ -132,7 +133,21 @@ export default function SettingsPage() {
 
         {/* Тариф */}
         <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
-          <h2 className="mb-6 text-lg font-semibold text-white">Ваш тариф</h2>
+          <h2 className="mb-4 text-lg font-semibold text-white">Ваш тариф</h2>
+
+          {/* Plan summary */}
+          <div className="mb-6 flex items-center gap-3">
+            <PlanBadge plan={plan} large />
+            {plan === "founder" && (
+              <span className="text-sm text-[#e8c547]">Бесплатно навсегда ⭐</span>
+            )}
+            {plan === "free" && (
+              <span className="text-sm text-zinc-400">Ограниченный доступ</span>
+            )}
+            {(plan === "standard" || plan === "pro") && (
+              <span className="text-sm text-zinc-400">Активна подписка</span>
+            )}
+          </div>
 
           {plan === "founder" ? (
             <div className="rounded-lg border border-[#e8c547]/40 bg-[#e8c547]/5 p-4">
