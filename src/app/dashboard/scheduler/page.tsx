@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
+import UpgradeModal from "@/components/UpgradeModal";
 
 const MAX_LENGTH = 4096;
 
@@ -39,20 +40,29 @@ export default function SchedulerPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [userEmail, setUserEmail] = useState("");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: chans } = await supabase
-        .from("channels")
-        .select("id, title, username")
-        .eq("user_id", user.id)
-        .order("title");
+      setUserEmail(user.email ?? "");
 
-      setChannels(chans ?? []);
-      if (chans && chans.length > 0) setChannelId(chans[0].id);
+      const [userPlan, chansRes] = await Promise.all([
+        getUserPlan(),
+        supabase
+          .from("channels")
+          .select("id, title, username")
+          .eq("user_id", user.id)
+          .order("title"),
+      ]);
+
+      setPlan(userPlan);
+      setChannels(chansRes.data ?? []);
+      if (chansRes.data && chansRes.data.length > 0) setChannelId(chansRes.data[0].id);
 
       await loadPosts(user.id);
     }
@@ -122,6 +132,44 @@ export default function SchedulerPage() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (user) await loadPosts(user.id);
+  }
+
+  // Loading state
+  if (plan === null) {
+    return (
+      <div className="flex h-full min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-700 border-t-[#e8c547]" />
+      </div>
+    );
+  }
+
+  // Locked for free users
+  if (plan === "free") {
+    return (
+      <div className="px-4 py-6 md:px-8 md:py-8">
+        <h1 className="mb-8 text-2xl font-bold text-white">Планировщик</h1>
+        <div className="flex flex-col items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 py-20 text-center">
+          <span className="mb-4 text-4xl">🔒</span>
+          <p className="mb-2 font-semibold text-white">Планировщик постов</p>
+          <p className="mb-6 max-w-sm text-sm text-zinc-400">
+            Планировщик постов доступен на тарифах Стандарт и Про
+          </p>
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="rounded-lg bg-[#e8c547] px-6 py-2.5 font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            Получить доступ
+          </button>
+        </div>
+        {showUpgrade && (
+          <UpgradeModal
+            featureName="Планировщик постов"
+            email={userEmail}
+            onClose={() => setShowUpgrade(false)}
+          />
+        )}
+      </div>
+    );
   }
 
   return (

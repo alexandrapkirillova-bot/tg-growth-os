@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
+import UpgradeModal from "@/components/UpgradeModal";
 
 const PLANS = [
   {
@@ -29,9 +30,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [plan, setPlan] = useState("free");
+  const [plan, setPlan] = useState<Plan>("free");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -40,15 +42,14 @@ export default function SettingsPage() {
 
       setEmail(user.email ?? "");
 
-      const { data } = await supabase
-        .from("users")
-        .select("name, plan")
-        .eq("id", user.id)
-        .single();
+      const [userPlan, profileRes] = await Promise.all([
+        getUserPlan(),
+        supabase.from("users").select("name, plan").eq("id", user.id).single(),
+      ]);
 
-      if (data) {
-        setName(data.name ?? "");
-        setPlan(data.plan ?? "free");
+      setPlan(userPlan);
+      if (profileRes.data) {
+        setName(profileRes.data.name ?? "");
       }
     }
 
@@ -132,49 +133,77 @@ export default function SettingsPage() {
         {/* Тариф */}
         <section className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
           <h2 className="mb-6 text-lg font-semibold text-white">Ваш тариф</h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {PLANS.map((p) => {
-              const active = plan === p.key;
-              return (
-                <div
-                  key={p.key}
-                  className={`rounded-lg border p-4 transition-colors ${
-                    active
-                      ? "border-[#e8c547] bg-[#e8c547]/5"
-                      : "border-zinc-700 bg-zinc-800/50"
-                  }`}
-                >
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="font-semibold text-white">{p.label}</span>
-                    {active && (
-                      <span className="rounded-full bg-[#e8c547]/20 px-2 py-0.5 text-xs text-[#e8c547]">
-                        Текущий
-                      </span>
-                    )}
-                  </div>
-                  {p.price && (
-                    <p className="mb-3 text-sm text-zinc-400">{p.price}</p>
-                  )}
-                  <ul className="mb-4 space-y-1">
-                    {p.features.map((f) => (
-                      <li key={f} className="text-xs text-zinc-500">
-                        • {f}
-                      </li>
-                    ))}
-                  </ul>
-                  {p.key !== "free" && !active && (
-                    <button
-                      disabled
-                      className="w-full rounded-lg border border-zinc-600 py-1.5 text-xs text-zinc-500 cursor-not-allowed"
+
+          {plan === "founder" ? (
+            <div className="rounded-lg border border-[#e8c547]/40 bg-[#e8c547]/5 p-4">
+              <p className="font-semibold text-[#e8c547]">Founder — бесплатно навсегда ⭐</p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Вы один из первых пользователей. Полный доступ ко всем функциям навсегда.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {PLANS.map((p) => {
+                  const active = plan === p.key;
+                  return (
+                    <div
+                      key={p.key}
+                      className={`rounded-lg border p-4 transition-colors ${
+                        active
+                          ? "border-[#e8c547] bg-[#e8c547]/5"
+                          : "border-zinc-700 bg-zinc-800/50"
+                      }`}
                     >
-                      Скоро
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="font-semibold text-white">{p.label}</span>
+                        {active && (
+                          <span className="rounded-full bg-[#e8c547]/20 px-2 py-0.5 text-xs text-[#e8c547]">
+                            Текущий
+                          </span>
+                        )}
+                      </div>
+                      {p.price && (
+                        <p className="mb-3 text-sm text-zinc-400">{p.price}</p>
+                      )}
+                      <ul className="mb-4 space-y-1">
+                        {p.features.map((f) => (
+                          <li key={f} className="text-xs text-zinc-500">
+                            • {f}
+                          </li>
+                        ))}
+                      </ul>
+                      {p.key !== "free" && !active && (
+                        <button
+                          disabled
+                          className="w-full cursor-not-allowed rounded-lg border border-zinc-600 py-1.5 text-xs text-zinc-500"
+                        >
+                          Скоро
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {plan === "free" && (
+                <button
+                  onClick={() => setShowUpgrade(true)}
+                  className="mt-4 rounded-lg bg-[#e8c547] px-6 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                >
+                  Улучшить тариф
+                </button>
+              )}
+            </>
+          )}
         </section>
+
+        {showUpgrade && (
+          <UpgradeModal
+            featureName="расширенных функций"
+            email={email}
+            onClose={() => setShowUpgrade(false)}
+          />
+        )}
 
         {/* Опасная зона */}
         <section className="rounded-xl border border-red-500/20 bg-zinc-900 p-6">

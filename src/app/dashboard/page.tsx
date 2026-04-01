@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { supabase } from "@/lib/supabase";
+import { supabase, getUserPlan, type Plan } from "@/lib/supabase";
 
 interface Channel {
   id: string;
@@ -38,17 +38,29 @@ interface Metrics {
   avgViews: number;
 }
 
+const PLAN_BADGE: Record<Plan, { label: string; className: string }> = {
+  founder: { label: "Founder ⭐", className: "bg-[#e8c547]/20 text-[#e8c547] border border-[#e8c547]/40" },
+  free: { label: "Free", className: "bg-zinc-800 text-zinc-400 border border-zinc-700" },
+  standard: { label: "Стандарт", className: "bg-blue-500/20 text-blue-400 border border-blue-500/40" },
+  pro: { label: "Про", className: "bg-green-500/20 text-green-400 border border-green-500/40" },
+};
+
 export default function DashboardPage() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [stats, setStats] = useState<StatPoint[]>([]);
   const [metrics, setMetrics] = useState<Metrics>({ subscribers: 0, postsLast7Days: 0, avgViews: 0 });
   const [loading, setLoading] = useState(true);
+  const [plan, setPlan] = useState<Plan>("free");
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+
+      setUserEmail(session.user.email ?? "");
+      getUserPlan().then(setPlan);
 
       const { data: channelsData } = await supabase
         .from("channels")
@@ -138,7 +150,17 @@ export default function DashboardPage() {
   return (
     <div className="px-4 py-6 md:px-8 md:py-8">
       <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-white">Дашборд</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-white">Дашборд</h1>
+          {userEmail && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <span className="text-sm text-zinc-500">{userEmail}</span>
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PLAN_BADGE[plan].className}`}>
+                {PLAN_BADGE[plan].label}
+              </span>
+            </div>
+          )}
+        </div>
         <Link
           href="/dashboard/add-channel"
           className="self-start rounded-lg bg-[#e8c547] px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 sm:self-auto"
