@@ -26,7 +26,7 @@ export default function Home() {
             Инструмент для роста Telegram-каналов
           </div>
           <h1 className="mt-4 text-5xl font-bold leading-tight tracking-tight sm:text-6xl lg:text-7xl">
-            Рости быстрее{" "}
+            Расти быстрее{" "}
             <span className="text-[#e8c547]">в Telegram</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">
@@ -60,7 +60,7 @@ export default function Home() {
               {
                 icon: "📊",
                 title: "Глубокая аналитика",
-                text: "Узнайте какие посты работают, когда ваша аудитория онлайн и как растёт канал",
+                text: "Узнайте, какие посты работают, когда ваша аудитория онлайн и как растёт канал",
               },
               {
                 icon: "📅",
@@ -103,7 +103,7 @@ export default function Home() {
                 text: "Привлекайте клиентов через Telegram без лишних затрат",
               },
               {
-                title: "SMM специалисты",
+                title: "SMM-специалисты",
                 text: "Управляйте несколькими каналами из одного места",
               },
             ].map((item) => (
@@ -127,7 +127,7 @@ export default function Home() {
             Простые и честные цены
           </h2>
           <p className="mb-12 text-center text-zinc-400">
-            Начните бесплатно, платите только когда вырастете
+            Начните бесплатно, платите только тогда, когда вырастете
           </p>
           <div className="grid gap-6 sm:grid-cols-3">
             {/* Бесплатный */}
